@@ -1,4 +1,4 @@
-# NFL-BBD-2022
+# NFL-BDB-2022
 
 This repository is for Elizabeth G. Campolongo, Ranthony A.C. Edmonds, and Chaya Norton's Erdös Data Science Project in Fall 2021. 
 
