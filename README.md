@@ -6,4 +6,4 @@ This project will be completed as a submission to the NFL Big Data Bowl 2022, li
 
 Additionally, this project was suggested by MinedXAI, with the goal to leverage Topological Data Analysis (TDA) as a tool to better understand NFL Special Teams Plays. 
 
-Our NFL data was compiled by the hosts of the competition. 
+Our NFL data was compiled by the hosts of the competition, and the Weather data is from Thomas Bliss (ThompsonJamesBliss on GitHub), one of the competition hosts. 
