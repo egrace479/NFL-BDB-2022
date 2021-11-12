@@ -50,15 +50,112 @@ def preprocess_players(players_df):
     return players_df
 
 
+# Note: run `preprocess_play` before `preprocess_tracking`.
+
 # In[ ]:
 
 
 #preprocess tracking
-def preprocess_tracking(track_df):
-    track_df.loc[track_df['playDirection'] == 'left', 'x'] = 120 -track_df.loc[track_df['playDirection']=='left','x']
-    track_df.loc[track_df['playDirection'] == 'left', 'y'] = 160/3 -track_df.loc[track_df['playDirection']=='left','y']
-#note that we have 160/3 for the y direction since the football field is 160ft, but our units are yards
-    return track_df
+def preprocess_tracking(track18, track19, track20, play_df):
+     '''
+    This function creates the tracking dataframes.
+
+    Parameters:
+    -----------
+    track18, track19, track20 - trackYY.csv dataframes
+    play_df - Preprocessed play.csv dataframe
+    ...
+
+    Returns:
+    -----------
+    track_ep18 - Tracking ExtraPoint 2018 dataframe
+    track_ep19 - Tracking ExtraPoint 2019 dataframe
+    track_ep20 - Tracking ExtraPoint 2020 dataframe
+    track_fg18 - Tracking FieldGoal 2018 dataframe
+    track_fg19 - Tracking FieldGoal 2019 dataframe
+    track_fg20 - Tracking FieldGoal 2020 dataframe
+    track_punt18 - Tracking Punt 2018 dataframe
+    track_punt19 - Tracking Punt 2019 dataframe
+    track_punt20 - Tracking Punt 2020 dataframe
+    track_ko18 - Tracking Kickoff 2018 dataframe
+    track_ko19 - Tracking Kickoff 2019 dataframe
+    track_ko20 - Tracking Kickoff 2020 dataframe
+    track_fep - Tracking Football ExtraPoint dataframe
+    track_ffg - Tracking Football Fieldgoal dataframe
+    track_fpunt - Tracking Football Punt dataframe
+    track_fko - Tracking Football Kickoff dataframe
+
+    '''
+    #re-orient direction of play by offensive team direction : 
+    #We must reorient this to reflect movement in the offense direction instead of the on-field coordinates 
+    #(reorient the orgin from the bottom left to top right for a change in direction).
+    #2018 tracking data
+    track18.loc[track18['playDirection'] == 'left', 'x'] = 120 -track18.loc[track18['playDirection']=='left','x']
+    track18.loc[track18['playDirection'] == 'left', 'y'] = 160/3 -track18.loc[track18['playDirection']=='left','y']
+    #note that we have 160/3 for the y direction since the football field is 160ft, but our units are yards
+
+    #2019 tracking data
+    track19.loc[track19['playDirection'] == 'left', 'x'] = 120 -track19.loc[track19['playDirection']=='left','x']
+    track19.loc[track19['playDirection'] == 'left', 'y'] = 160/3 -track19.loc[track19['playDirection']=='left','y']
+
+    #2020 tracking data
+    track20.loc[track20['playDirection'] == 'left', 'x'] = 120 -track20.loc[track20['playDirection']=='left','x']
+    track20.loc[track20['playDirection'] == 'left', 'y'] = 160/3 -track20.loc[track20['playDirection']=='left','y']
+
+    #divide play dataset by type of play
+    play_ep = play_df.loc[play_df['specialTeamsPlayType']=='Extra Point'][['gameId', 'playId']]
+    play_fg = play_df.loc[play_df['specialTeamsPlayType']=='Field Goal'][['gameId', 'playId']]
+    play_punt = play_df.loc[play_df['specialTeamsPlayType']=='Punt'][['gameId', 'playId']]
+    play_ko = play_df.loc[play_df['specialTeamsPlayType']=='Kickoff'][['gameId', 'playId']]
+    
+    #merge play_type with tracking for each year
+    #extrapoint
+    track_ep18 = pd.merge(play_ep, track18, left_on = ['gameId', 'playId'], right_on = ['gameId', 'playId'])
+    track_ep19 = pd.merge(play_ep, track19, left_on = ['gameId', 'playId'], right_on = ['gameId', 'playId'])
+    track_ep20 = pd.merge(play_ep, track20, left_on = ['gameId', 'playId'], right_on = ['gameId', 'playId'])
+    
+    #fieldgoal 
+    track_fg18 = pd.merge(play_fg, track18, left_on = ['gameId', 'playId'], right_on = ['gameId', 'playId'])
+    track_fg19 = pd.merge(play_fg, track19, left_on = ['gameId', 'playId'], right_on = ['gameId', 'playId'])
+    track_fg20 = pd.merge(play_fg, track20, left_on = ['gameId', 'playId'], right_on = ['gameId', 'playId'])
+    
+    #punt
+    track_punt18 = pd.merge(play_punt, track18, left_on = ['gameId', 'playId'], right_on = ['gameId', 'playId'])
+    track_punt19 = pd.merge(play_punt, track19, left_on = ['gameId', 'playId'], right_on = ['gameId', 'playId'])
+    track_punt20 = pd.merge(play_punt, track20, left_on = ['gameId', 'playId'], right_on = ['gameId', 'playId'])
+    
+    #kickoff
+    track_ko18 = pd.merge(play_ko, track18, left_on = ['gameId', 'playId'], right_on = ['gameId', 'playId'])
+    track_ko19 = pd.merge(play_ko, track19, left_on = ['gameId', 'playId'], right_on = ['gameId', 'playId'])
+    track_ko20 = pd.merge(play_ko, track20, left_on = ['gameId', 'playId'], right_on = ['gameId', 'playId'])
+    
+    #separate out the football data in each playtype tracking dataframe and drop null values
+    #concatenate to one dataframe per type of play
+    #extrapoint football
+    track_fep18 = track_ep18.loc[track_ep18['displayName'] == 'football'].dropna(axis = 'columns')
+    track_fep19 = track_ep19.loc[track_ep19['displayName'] == 'football'].dropna(axis = 'columns')
+    track_fep20 = track_ep20.loc[track_ep20['displayName'] == 'football'].dropna(axis = 'columns')
+    track_fep = pd.concat([track_fep18, track_fep19, track_fep20], ignore_index = True)
+    
+    #fieldgoal football
+    track_ffg18 = track_fg18.loc[track_fg18['displayName'] == 'football'].dropna(axis = 'columns')
+    track_ffg19 = track_fg19.loc[track_fg19['displayName'] == 'football'].dropna(axis = 'columns')
+    track_ffg20 = track_fg20.loc[track_fg20['displayName'] == 'football'].dropna(axis = 'columns')
+    track_ffg = pd.concat([track_ffg18, track_ffg19, track_ffg20], ignore_index = True)
+    
+    #punt football
+    track_fpunt18 = track_punt18.loc[track_punt18['displayName'] == 'football'].dropna(axis = 'columns')
+    track_fpunt19 = track_punt19.loc[track_punt19['displayName'] == 'football'].dropna(axis = 'columns')
+    track_fpunt20 = track_punt20.loc[track_punt20['displayName'] == 'football'].dropna(axis = 'columns')
+    track_fpunt = pd.concat([track_fpunt18, track_fpunt19, track_fpunt20], ignore_index = True)
+    
+    #kickoff football
+    track_fko18 = track_ko18.loc[track_ko18['displayName'] == 'football'].dropna(axis = 'columns')
+    track_fko19 = track_ko19.loc[track_ko19['displayName'] == 'football'].dropna(axis = 'columns')
+    track_fko20 = track_ko20.loc[track_ko20['displayName'] == 'football'].dropna(axis = 'columns')
+    track_fko = pd.concat([track_fko18, track_fko19, track_fko20], ignore_index = True)
+    
+    return track_ep18, track_ep19, track_ep20, track_fg18, track_fg19, track_fg20, track_punt18, track_punt19, track_punt20, track_ko18, track_ko19, track_ko20, track_fep, track_ffg, track_fpunt, track_fko
 
 
 # In[ ]:
@@ -70,7 +167,7 @@ def preprocess_play(play_df):
     play_df['penaltyYards']=play_df['penaltyYards'].fillna(0)
     
     #clock: MM:SS to Seconds
-    play_df['gameClockSeconds'] = play_df.index.map(lambda x: clock(x,play_df))
+    play_df['gameClockSeconds'] = play_df.index.map(lambda x: clock(x,df))
     
     #redefine nulls in penalty as no penalty
     play_df['penaltyCodes']=play_df['penaltyCodes'].fillna('no penalty')
@@ -214,6 +311,7 @@ def preprocess_ep(ep_plays):
     useful_cols = ['specialTeamsResult', 'yardlineNumber', 'gameClockSeconds', 
                    'penaltyCodes', 'penaltyYards', 'preSnapHomeScore', 
                    'preSnapVisitorScore', 'kicker_height', 'kicker_weight']
+    
     #useful_cols with blockers
     #useful_cols = ['specialTeamsResult', 'yardlineNumber', 'gameClockSeconds', 
                  #   'penaltyCodes', 'penaltyYards', 'preSnapHomeScore', 'preSnapVisitorScore', 
@@ -225,13 +323,17 @@ def preprocess_ep(ep_plays):
     ohe_str = le_str.fit_transform(ep_df['specialTeamsResult'])
     ohe_pc = le_pc.fit_transform(ep_df['penaltyCodes'])
     new_eps = ep_df.drop(['specialTeamsResult', 'penaltyCodes'], axis=1)
-    new_eps['specialTeamsResult'] = ohe_str
-    new_eps['penaltyCodes'] = ohe_pc
+    #new_eps['specialTeamsResult'] = ohe_str
+    #new_eps['penaltyCodes'] = ohe_pc
     
-    #scale data
+    #scale data, but only non-categorical columns
     scale = StandardScaler()
     ep_scale = scale.fit_transform(new_eps)
-    #TO-DO QUESTION: do we want to scale categoricals too? 
+    #TO-DO QUESTION: do we want to scale categoricals too? No
+    
+    #add categorical columns back
+    ep_scale['specialTeamsResult'] = ohe_str
+    ep_scale['penaltyCodes'] = ohe_pc
     #we are running a distance dependent algorithm
     return ep_scale
     
@@ -262,6 +364,7 @@ def preprocess_fg(fg_plays):
                'kicker_weight', 'down',
               'yardsToGo', 'kickLength',
               'playResult']
+    
     #useful_cols with blockers
     #useful_cols = ['specialTeamsResult', 'yardlineNumber', 
    #            'gameClockSeconds', 'penaltyCodes', 
@@ -278,13 +381,17 @@ def preprocess_fg(fg_plays):
     ohe_str = le_str.fit_transform(fg_df['specialTeamsResult'])
     ohe_pc = le_pc.fit_transform(fg_df['penaltyCodes'])
     new_fgs = fg_df.drop(['specialTeamsResult', 'penaltyCodes'], axis=1)
-    new_fgs['specialTeamsResult'] = ohe_str
-    new_fgs['penaltyCodes'] = ohe_pc
+    #new_fgs['specialTeamsResult'] = ohe_str
+    #new_fgs['penaltyCodes'] = ohe_pc
     
-    #scale data
+    #scale data, but only non-categorical columns
     scale = StandardScaler()
     fg_scale = scale.fit_transform(new_fgs)
-    #TO-DO QUESTION: do we want to scale categoricals too? 
+    #TO-DO QUESTION: do we want to scale categoricals too? No
+    
+    #add categorical columns back
+    fg_scale['specialTeamsResult'] = ohe_str
+    fg_scale['penaltyCodes'] = ohe_pc
     #we are running a distance dependent algorithm
     return fg_scale, fg_df
 
