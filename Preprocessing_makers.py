@@ -56,7 +56,7 @@ def preprocess_players(players_df):
 
 
 #preprocess tracking
-def preprocess_tracking(track18, track19, track20, play_df):
+def preprocess_tracking(track18, track19, track20, play_df, play_type):
     '''
     This function creates the tracking dataframes.
 
@@ -64,27 +64,14 @@ def preprocess_tracking(track18, track19, track20, play_df):
     -----------
     track18, track19, track20 - trackYY.csv dataframes
     play_df - Preprocessed play.csv dataframe
+    play_type - string, play type, e.g., 'Extra Point' 
     ...
 
     Returns:
     -----------
-    track_ep18 - Tracking ExtraPoint 2018 dataframe
-    track_ep19 - Tracking ExtraPoint 2019 dataframe
-    track_ep20 - Tracking ExtraPoint 2020 dataframe
-    track_fg18 - Tracking FieldGoal 2018 dataframe
-    track_fg19 - Tracking FieldGoal 2019 dataframe
-    track_fg20 - Tracking FieldGoal 2020 dataframe
-    track_punt18 - Tracking Punt 2018 dataframe
-    track_punt19 - Tracking Punt 2019 dataframe
-    track_punt20 - Tracking Punt 2020 dataframe
-    track_ko18 - Tracking Kickoff 2018 dataframe
-    track_ko19 - Tracking Kickoff 2019 dataframe
-    track_ko20 - Tracking Kickoff 2020 dataframe
-    track_fep - Tracking Football ExtraPoint dataframe
-    track_ffg - Tracking Football Fieldgoal dataframe
-    track_fpunt - Tracking Football Punt dataframe
-    track_fko - Tracking Football Kickoff dataframe
-
+    track_p18 - Tracking Play Type 2018 dataframe
+    track_p19 - Tracking Play Type 2019 dataframe
+    track_p20 - Tracking Play Type 2020 dataframe
     '''
     #re-orient direction of play by offensive team direction : 
     #We must reorient this to reflect movement in the offense direction instead of the on-field coordinates 
@@ -103,59 +90,41 @@ def preprocess_tracking(track18, track19, track20, play_df):
     track20.loc[track20['playDirection'] == 'left', 'y'] = 160/3 -track20.loc[track20['playDirection']=='left','y']
 
     #divide play dataset by type of play
-    play_ep = play_df.loc[play_df['specialTeamsPlayType']=='Extra Point'][['gameId', 'playId']]
-    play_fg = play_df.loc[play_df['specialTeamsPlayType']=='Field Goal'][['gameId', 'playId']]
-    play_punt = play_df.loc[play_df['specialTeamsPlayType']=='Punt'][['gameId', 'playId']]
-    play_ko = play_df.loc[play_df['specialTeamsPlayType']=='Kickoff'][['gameId', 'playId']]
+    play_p = play_df.loc[play_df['specialTeamsPlayType']== play_type][['gameId', 'playId']]
     
     #merge play_type with tracking for each year
-    #extrapoint
-    track_ep18 = pd.merge(play_ep, track18, left_on = ['gameId', 'playId'], right_on = ['gameId', 'playId'])
-    track_ep19 = pd.merge(play_ep, track19, left_on = ['gameId', 'playId'], right_on = ['gameId', 'playId'])
-    track_ep20 = pd.merge(play_ep, track20, left_on = ['gameId', 'playId'], right_on = ['gameId', 'playId'])
+    track_p18 = pd.merge(play_p, track18, left_on = ['gameId', 'playId'], right_on = ['gameId', 'playId'])
+    track_p19 = pd.merge(play_p, track19, left_on = ['gameId', 'playId'], right_on = ['gameId', 'playId'])
+    track_p20 = pd.merge(play_p, track20, left_on = ['gameId', 'playId'], right_on = ['gameId', 'playId'])
     
-    #fieldgoal 
-    track_fg18 = pd.merge(play_fg, track18, left_on = ['gameId', 'playId'], right_on = ['gameId', 'playId'])
-    track_fg19 = pd.merge(play_fg, track19, left_on = ['gameId', 'playId'], right_on = ['gameId', 'playId'])
-    track_fg20 = pd.merge(play_fg, track20, left_on = ['gameId', 'playId'], right_on = ['gameId', 'playId'])
+    return track_p18, track_p19, track_p20
+
+
+# In[ ]:
+
+
+def preprocess_football_track(track_p18, track_p19, track_p20):
+    '''
+    This function creates the football tracking dataframe by given event.
+
+    Parameters:
+    -----------
+    track_p18, track_p19, track_p20 - tracking by play by year dataframes
+    ...
+
+    Returns:
+    -----------
+    track_fp - Tracking Football Play Type dataframe
+    '''
     
-    #punt
-    track_punt18 = pd.merge(play_punt, track18, left_on = ['gameId', 'playId'], right_on = ['gameId', 'playId'])
-    track_punt19 = pd.merge(play_punt, track19, left_on = ['gameId', 'playId'], right_on = ['gameId', 'playId'])
-    track_punt20 = pd.merge(play_punt, track20, left_on = ['gameId', 'playId'], right_on = ['gameId', 'playId'])
+    #separate out the football data in each year's tracking dataframe and drop null values
+    #concatenate to one dataframe for football tracking data
+    track_fp18 = track_p18.loc[track_p18['displayName'] == 'football'].dropna(axis = 'columns')
+    track_fp19 = track_p19.loc[track_p19['displayName'] == 'football'].dropna(axis = 'columns')
+    track_fp20 = track_p20.loc[track_p20['displayName'] == 'football'].dropna(axis = 'columns')
+    track_fp = pd.concat([track_fp18, track_fp19, track_fp20], ignore_index = True)
     
-    #kickoff
-    track_ko18 = pd.merge(play_ko, track18, left_on = ['gameId', 'playId'], right_on = ['gameId', 'playId'])
-    track_ko19 = pd.merge(play_ko, track19, left_on = ['gameId', 'playId'], right_on = ['gameId', 'playId'])
-    track_ko20 = pd.merge(play_ko, track20, left_on = ['gameId', 'playId'], right_on = ['gameId', 'playId'])
-    
-    #separate out the football data in each playtype tracking dataframe and drop null values
-    #concatenate to one dataframe per type of play
-    #extrapoint football
-    track_fep18 = track_ep18.loc[track_ep18['displayName'] == 'football'].dropna(axis = 'columns')
-    track_fep19 = track_ep19.loc[track_ep19['displayName'] == 'football'].dropna(axis = 'columns')
-    track_fep20 = track_ep20.loc[track_ep20['displayName'] == 'football'].dropna(axis = 'columns')
-    track_fep = pd.concat([track_fep18, track_fep19, track_fep20], ignore_index = True)
-    
-    #fieldgoal football
-    track_ffg18 = track_fg18.loc[track_fg18['displayName'] == 'football'].dropna(axis = 'columns')
-    track_ffg19 = track_fg19.loc[track_fg19['displayName'] == 'football'].dropna(axis = 'columns')
-    track_ffg20 = track_fg20.loc[track_fg20['displayName'] == 'football'].dropna(axis = 'columns')
-    track_ffg = pd.concat([track_ffg18, track_ffg19, track_ffg20], ignore_index = True)
-    
-    #punt football
-    track_fpunt18 = track_punt18.loc[track_punt18['displayName'] == 'football'].dropna(axis = 'columns')
-    track_fpunt19 = track_punt19.loc[track_punt19['displayName'] == 'football'].dropna(axis = 'columns')
-    track_fpunt20 = track_punt20.loc[track_punt20['displayName'] == 'football'].dropna(axis = 'columns')
-    track_fpunt = pd.concat([track_fpunt18, track_fpunt19, track_fpunt20], ignore_index = True)
-    
-    #kickoff football
-    track_fko18 = track_ko18.loc[track_ko18['displayName'] == 'football'].dropna(axis = 'columns')
-    track_fko19 = track_ko19.loc[track_ko19['displayName'] == 'football'].dropna(axis = 'columns')
-    track_fko20 = track_ko20.loc[track_ko20['displayName'] == 'football'].dropna(axis = 'columns')
-    track_fko = pd.concat([track_fko18, track_fko19, track_fko20], ignore_index = True)
-    
-    return track_ep18, track_ep19, track_ep20, track_fg18, track_fg19, track_fg20, track_punt18, track_punt19, track_punt20, track_ko18, track_ko19, track_ko20, track_fep, track_ffg, track_fpunt, track_fko
+    return track_fp
 
 
 # In[ ]:
