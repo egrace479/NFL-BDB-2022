@@ -57,7 +57,7 @@ def preprocess_players(players_df):
 
 #preprocess tracking
 def preprocess_tracking(track18, track19, track20, play_df):
-     '''
+    '''
     This function creates the tracking dataframes.
 
     Parameters:
@@ -88,7 +88,7 @@ def preprocess_tracking(track18, track19, track20, play_df):
     '''
     #re-orient direction of play by offensive team direction : 
     #We must reorient this to reflect movement in the offense direction instead of the on-field coordinates 
-    #(reorient the orgin from the bottom left to top right for a change in direction).
+    #(reorient the origin from the bottom left to top right for a change in direction).
     #2018 tracking data
     track18.loc[track18['playDirection'] == 'left', 'x'] = 120 -track18.loc[track18['playDirection']=='left','x']
     track18.loc[track18['playDirection'] == 'left', 'y'] = 160/3 -track18.loc[track18['playDirection']=='left','y']
@@ -167,7 +167,7 @@ def preprocess_play(play_df):
     play_df['penaltyYards']=play_df['penaltyYards'].fillna(0)
     
     #clock: MM:SS to Seconds
-    play_df['gameClockSeconds'] = play_df.index.map(lambda x: clock(x,df))
+    play_df['gameClockSeconds'] = play_df.index.map(lambda x: clock(x,play_df))
     
     #redefine nulls in penalty as no penalty
     play_df['penaltyCodes']=play_df['penaltyCodes'].fillna('no penalty')
