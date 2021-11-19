@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # coding: utf-8
 
-# In[3]:
+# In[1]:
 
 
 import pandas as pd
@@ -10,7 +10,7 @@ from sklearn.preprocessing import StandardScaler, LabelEncoder
 import hdbscan
 
 
-# In[ ]:
+# In[2]:
 
 
 ##Helper Functions :)
@@ -42,6 +42,29 @@ def clock(x,df):
 # In[ ]:
 
 
+def get_play(game_id, play_id, tracking):
+    '''
+    This function creates the tracking dataframes.
+
+    Parameters:
+    -----------
+    game_id, play_id - game and play of interest
+    tracking - tracking dataframe the that game and play are in
+    ...
+
+    Returns:
+    -----------
+    play - dataframe of just the tracking data for the particular play of interest
+    '''
+    game = tracking[tracking['gameId'] == game_id]
+    play_ex = game[game['playId'] == play_id]
+    
+    return play_ex
+
+
+# In[ ]:
+
+
 ##preprocess by dataset
 #players Dataset
 def preprocess_players(players_df):
@@ -50,7 +73,8 @@ def preprocess_players(players_df):
     return players_df
 
 
-# Note: run `preprocess_play` before `preprocess_tracking`.
+# Note: run `preprocess_tracking` first, then `preprocess_football_track`, then `preprocess_play`.
+# AFTER running these 3 functions, you can run `drop_by_index_difference`.
 
 # In[ ]:
 
@@ -58,12 +82,12 @@ def preprocess_players(players_df):
 #preprocess tracking
 def preprocess_tracking(track18, track19, track20, play_df, play_type):
     '''
-    This function creates the tracking dataframes.
+    This function creates the tracking dataframes by play-type by year.
 
     Parameters:
     -----------
     track18, track19, track20 - trackYY.csv dataframes
-    play_df - Preprocessed play.csv dataframe
+    play_df - play.csv dataframe
     play_type - string, play type, e.g., 'Extra Point' 
     ...
 
@@ -135,6 +159,18 @@ def preprocess_football_track(track_p18, track_p19, track_p20):
 
 #preprocess play data
 def preprocess_play(play_df):
+    '''
+    This function fills nulls in the play dataframe and applies the clock function.
+
+    Parameters:
+    -----------
+    play_df - play.csv dataframe
+    ...
+
+    Returns:
+    -----------
+    play_df - Processed play dataframe
+    '''
     #null penalty yards = 0
     play_df['penaltyYards']=play_df['penaltyYards'].fillna(0)
     
@@ -188,7 +224,7 @@ def get_weather_data():
     return weather2018, weather2019, weather2020
 
 
-# In[2]:
+# In[ ]:
 
 
 #make the ExtraPoint dataframe
@@ -282,12 +318,14 @@ def preprocess_ep(ep_plays):
     #reduce number of columns to those with numeric values or one-hot-encode the categoricals
     useful_cols = ['specialTeamsResult', 'yardlineNumber', 'gameClockSeconds', 
                    'penaltyCodes', 'penaltyYards', 'preSnapHomeScore', 
-                   'preSnapVisitorScore', 'kicker_height', 'kicker_weight']
+                   'preSnapVisitorScore', 'kicker_height', 'kicker_weight', 'expected_endzone_y', 
+                   'endzone_y', 'kicker_core_dist']
     
     #useful_cols with blockers
     #useful_cols = ['specialTeamsResult', 'yardlineNumber', 'gameClockSeconds', 
                  #   'penaltyCodes', 'penaltyYards', 'preSnapHomeScore', 'preSnapVisitorScore', 
-                # 'kicker_height', 'kicker_weight', 'blocker_height', 'blocker_weight']
+                # 'kicker_height', 'kicker_weight', 'blocker_height', 'blocker_weight',
+                # 'expected_endzone_y', 'endzone_y', 'kicker_core_dist']
     ep_df = ep_plays[useful_cols]
     #one-hot-encode SpecialTeamsResult and penaltyCodes
     le_str = LabelEncoder()
@@ -335,7 +373,8 @@ def preprocess_fg(fg_plays):
                'preSnapVisitorScore', 'kicker_height', 
                'kicker_weight', 'down',
               'yardsToGo', 'kickLength',
-              'playResult']
+              'playResult', 'expected_endzone_y', 
+                   'endzone_y', 'kicker_core_dist']
     
     #useful_cols with blockers
     #useful_cols = ['specialTeamsResult', 'yardlineNumber', 
@@ -345,7 +384,8 @@ def preprocess_fg(fg_plays):
    #            'kicker_weight', 'blocker_height', 
     #           'blocker_weight', 'down',
     #          'yardsToGo', 'kickLength',
-    #          'playResult']
+    #          'playResult', 'expected_endzone_y', 
+    #             'endzone_y', 'kicker_core_dist']
     fg_df = fg_plays[useful_cols]
     #one-hot-encode SpecialTeamsResult and penaltyCodes
     le_str = LabelEncoder()
