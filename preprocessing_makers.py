@@ -73,6 +73,9 @@ def preprocess_tracking(track18, track19, track20, play_df, play_type):
     track_p19 - Tracking Play Type 2019 dataframe
     track_p20 - Tracking Play Type 2020 dataframe
     '''
+    track18 = track18.copy()
+    track19 = track19.copy()
+    track20 = track20.copy()
     #re-orient direction of play by offensive team direction : 
     #We must reorient this to reflect movement in the offense direction instead of the on-field coordinates 
     #(reorient the origin from the bottom left to top right for a change in direction).
