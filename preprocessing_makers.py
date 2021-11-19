@@ -103,7 +103,7 @@ def preprocess_tracking(track18, track19, track20, play_df, play_type):
 # In[ ]:
 
 
-def preprocess_football_track(track_p18, track_p19, track_p20)
+def preprocess_football_track(track_p18, track_p19, track_p20):
     '''
     This function creates the football tracking dataframe by given event.
 
