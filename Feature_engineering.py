@@ -35,38 +35,43 @@ def get_play(game_id, play_id, tracking):
     play - dataframe of just the tracking data for the particular play of interest
     '''
     game = tracking[tracking['gameId'] == game_id]
-    play = game[game['playId'] == play_id]
+    play_ex = game[game['playId'] == play_id]
     
-    return play
+    return play_ex
 
 
 # In[ ]:
 
 
-def get_event(game_id, play_id, tracking_f, event):
+def get_event(game_id, play_id, track_fp, event):
     '''
     This function creates a small dataframe for football tracking around the event.
 
     Parameters:
     -----------
     game_id, play_id - game and play of interest
-    tracking_f - football-specific tracking dataframe the that game and play are in
+    track_fp - football-specific tracking dataframe for play type
     event - string of the event that we want to find, i.e., 'extra_point_attempt'
     ...
 
     Returns:
     -----------
     event_df - 11-row dataframe of tracking data around the event
-    frame_id - frameId of event
+    event_index - the index of the moment of the kick based on max velocity
+    #frame_id - frameId of event
     '''
-    play = get_play(game_id, play_id, tracking_f)
+    play_ex = get_play(game_id, play_id, track_fp)
     
-    index = play.index[play['event']== event].values[0]
-    event_df = play.loc[index-5:index+5,:]
-    max_index = event_df['s'].idxmax()
-    frame_id = play.loc[max_index]['frameId']
+    index = play_ex.index[play_ex['event']== event].values[0]
+    event_df = play_ex.loc[index-5:index+5,:]
+    event_index = event_df['s'].idxmax()
+
+    if event_index == event_df.index[-1]:
+        event_df = play_ex.loc[index-10:index+10,:]
+        
+    #frame_id = play_ex.loc[event_index]['frameId']
     
-    return event_df, frame_id
+    return event_df, event_index
 
 
 # In[ ]:
@@ -81,7 +86,7 @@ def x_within_fg_bounds(x):
     x - x-position of football
 
     '''
-    return ((x>119) & (x<121)) | ((x>-1) & (x<1))
+    return ((x>118) & (x<122)) | ((x>-2) & (x<2))
 
 def compute_endzone_y_pos(game_id, play_id, tracking):
     ''' 
@@ -154,14 +159,16 @@ def endzone_y_pos(play_df, track_fp):
 # In[ ]:
 
 
-def find_kickline(event_df, frame_id):  
+def find_kickline(game_id, play_id, track_fp, event):
+    
     '''
     This function gives a straightline expectation of where the football crosses the endzone.
 
     Parameters:
     -----------
-    event_df - dataframe of tracking data around the event (from get_event)
-    frame_id - frameId where the event occurs
+    game_id, play_id - game and play of interest
+    track_fp - football-specific tracking dataframe for play type
+    event - string of the event that we want to find, i.e., 'extra_point_attempt'
     ...
     finds event_index from frame_id of play and uses the x & y values from event_index
     and event_index+1 to calculate a straight line trajectory of the football
@@ -170,7 +177,8 @@ def find_kickline(event_df, frame_id):
     -----------
     y value expectation of football at x=120
     '''
-    event_index = event_df.index[event_df['frameId']==frame_id].values[0]
+    event_df, event_index = get_event(game_id, play_id, track_fp, event)
+    #event_index = event_df.index[event_df['frameId']==frame_id].values[0]
     
     x1 = event_df['x'][event_index]
     y1 = event_df['y'][event_index]
@@ -181,3 +189,107 @@ def find_kickline(event_df, frame_id):
     
     return m*(120-x1)+y1
 
+
+def expected_endzone_y_pos(pt_play, track_fp, event):
+    ''' 
+    The expected y-position of ball as it crosses fieldgoal line for each play (extra point or fieldgoal) based on a straight 
+    line estimate.
+
+    Paramters:
+    ----------
+    pt_play - play dataframe for desired play type
+    track_fp - football tracking dataframe for desired play type
+    event - string of the event that we want to find, i.e., 'extra_point_attempt'
+    
+    Returns:
+    --------
+    pt_play - play dataframe for desired play type with computed endzone y-position column
+
+    '''
+
+    pt_play['expected_endzone_y'] = pt_play.index.map(
+        lambda x: find_kickline(
+            pt_play.loc[x]['gameId'],
+            pt_play.loc[x]['playId'],
+            track_fp, event
+        )
+    )
+
+    return pt_play
+
+
+def l2_norm(x1, y1, x2, y2):
+    # Computes euclidean distance between two points
+    return np.sqrt(np.square(x1-x2) + np.square(y1-y2))
+
+
+
+def get_opposing_team(kicking_team):
+    # Returns label of opposing team
+    return 'home' if kicking_team == 'away' else 'away'
+
+
+
+def compute_kicker_core_dist(game_id, play_id, tracking, track_fp, event, k=5):
+    '''
+    Compute core distance from kicker to players on opposing team
+
+    Parameters:
+    -----------
+    game_id - gameId of play
+    play_id - playId of play
+    tracking - Tracking data containing relevant play
+    k - Number of nearest neighbors to check (returns distance of k-th nearest player)
+    #we seem to need track_fp to get the event of the kick
+
+    Returns:
+    --------
+    core_distance - The core distance from kicker to players on opposing team
+
+    '''
+
+    # Get play and event data
+    play_ex = get_play(game_id, play_id, tracking)
+    event_df, event_index = get_event(game_id, play_id, track_fp, event)
+
+    
+    # Get all play data at the time of the kick
+    kick_frame = event_df.loc[event_index]['frameId']
+    kick_tracking = play_ex[play_ex['frameId']==kick_frame]
+
+    # Get data from players on opposing team
+    kicking_team = kick_tracking[kick_tracking['position']=='K']['team'].values[0]
+    opposing_team = get_opposing_team(kicking_team)
+    opposing_team_players = kick_tracking[kick_tracking['team']==opposing_team]
+
+    # Get kicker x and y coords
+    kicker_x = kick_tracking[kick_tracking['position']=='K']['x'].values[0]
+    kicker_y = kick_tracking[kick_tracking['position']=='K']['y'].values[0]
+
+    # Compute Euclidean distances from kicker to players on opposing team
+    opposing_team_players['kicker_dist'] = l2_norm(kicker_x, kicker_y, opposing_team_players['x'], opposing_team_players['y'])
+
+    # Sort distances, grab k-th nearest distance (the core distance)
+    sorted_distances = opposing_team_players['kicker_dist'].sort_values()
+    core_distance = sorted_distances.iloc[k-1]
+
+    return core_distance
+
+
+
+def kicker_core_dist(pt_play, tracking2018, tracking2019, tracking2020, track_fp, event, k=5):
+    
+    tracking = pd.concat([tracking2018, tracking2019, tracking2020])
+
+    pt_play['kicker_core_dist'] = pt_play.index.map(
+        lambda x: compute_kicker_core_dist(
+            pt_play.loc[x]['gameId'],
+            pt_play.loc[x]['playId'],
+            tracking,
+            track_fp,
+            event,
+            k=k
+        )
+    )
+
+    return pt_play
