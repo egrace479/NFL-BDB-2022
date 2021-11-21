@@ -80,7 +80,7 @@ def get_kick_attempt_idx_diff(game_id, play_id, track_fp, event):
 # In[5]:
 
 
-def drop_by_index_difference(pt_play, track_fp, event, threshold):
+def drop_by_index_difference(pt_play, track_fp, event, threshold=7):
     '''
     Drop values from play DataFrame according to event-vs-max-speed index difference.
 
@@ -106,7 +106,7 @@ def drop_by_index_difference(pt_play, track_fp, event, threshold):
         )
     )
 
-    index_diff = pd.Series(index_diff, index=play_df.index)
+    index_diff = pd.Series(index_diff, index=pt_play.index)
 
     # Filter using the above series as a boolean mask
     filtered_pt_play = pt_play[index_diff <= threshold]

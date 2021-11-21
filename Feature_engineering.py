@@ -258,7 +258,18 @@ def compute_kicker_core_dist(game_id, play_id, tracking, track_fp, event, k=5):
     kick_tracking = play_ex[play_ex['frameId']==kick_frame]
 
     # Get data from players on opposing team
-    kicking_team = kick_tracking[kick_tracking['position']=='K']['team'].values[0]
+    try:
+        kicking_team = kick_tracking[kick_tracking['position']=='K']['team'].values[0]
+        
+    except IndexError:
+
+        '''
+        Apparently there are cases in which a kicker isn't present (???)
+        so if grabbing the kicker's team fails, just return null.
+        '''
+
+        return np.nan
+
     opposing_team = get_opposing_team(kicking_team)
     opposing_team_players = kick_tracking[kick_tracking['team']==opposing_team]
 
