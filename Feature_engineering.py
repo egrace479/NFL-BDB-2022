@@ -1,14 +1,14 @@
 #!/usr/bin/env python
 # coding: utf-8
 
-# In[ ]:
+# In[1]:
 
 
 import pandas as pd
-import numpy as np
+import numpy as np 
 
 
-# In[ ]:
+# In[2]:
 
 
 #small helper functions
@@ -17,7 +17,7 @@ def get_game_season(game_id, games):
     return games[games['gameId']==game_id]['season'].values[0]
 
 
-# In[ ]:
+# In[3]:
 
 
 def get_play(game_id, play_id, tracking):
@@ -40,7 +40,7 @@ def get_play(game_id, play_id, tracking):
     return play_ex
 
 
-# In[ ]:
+# In[4]:
 
 
 def get_event(game_id, play_id, track_fp, event):
@@ -62,10 +62,10 @@ def get_event(game_id, play_id, track_fp, event):
     '''
     play_ex = get_play(game_id, play_id, track_fp)
     
-    index = play_ex.index[play_ex['event']== event].values[0]
+    index = play_ex.index[play['event']== event].values[0]
     event_df = play_ex.loc[index-5:index+5,:]
     event_index = event_df['s'].idxmax()
-
+    
     if event_index == event_df.index[-1]:
         event_df = play_ex.loc[index-10:index+10,:]
         
@@ -74,7 +74,7 @@ def get_event(game_id, play_id, track_fp, event):
     return event_df, event_index
 
 
-# In[ ]:
+# In[5]:
 
 
 def x_within_fg_bounds(x):
@@ -88,7 +88,7 @@ def x_within_fg_bounds(x):
     '''
     return ((x>118) & (x<122)) | ((x>-2) & (x<2))
 
-def compute_endzone_y_pos(game_id, play_id, tracking):
+def compute_endzone_y_pos(game_id, play_id, track_fp):
     ''' 
     Compute y-position of ball as it crosses the fieldgoal line in extrapoint or fieldgoal.
 
@@ -96,14 +96,14 @@ def compute_endzone_y_pos(game_id, play_id, tracking):
     -----------
     game_id - gameId of play
     paly_id - playId of play
-    tracking - The relevant tracking data for the given game/play
+    track_fp - football-specific tracking dataframe for play type
 
     Returns:
     --------
     mean_y - Mean y-value of ball given initial and final positions within fieldgoal x-boundaries
     '''
 
-    play_example = get_play(game_id, play_id, tracking)
+    play_example = get_play(game_id, play_id, track_fp)
 
     try:
 
@@ -132,17 +132,18 @@ def compute_endzone_y_pos(game_id, play_id, tracking):
     return mean_y
 
 def endzone_y_pos(play_df, track_fp):
+    
     ''' 
     Compute y-position of ball as it crosses fieldgoal line for each play (extra point or fieldgoal).
 
     Paramters:
     ----------
     play_df - play dataframe for desired play type
-    track_fp - football tracking dataframe
+    track_fp - football tracking dataframe for desired play type
     
     Returns:
     --------
-    play_df - Play data with computed endzone y-position column
+    play_df - play dataframe for desired play type with endzone y-position column
 
     '''
     play_df['endzone_y'] = play_df.index.map(
@@ -156,7 +157,7 @@ def endzone_y_pos(play_df, track_fp):
     return play_df
 
 
-# In[ ]:
+# In[6]:
 
 
 def find_kickline(game_id, play_id, track_fp, event):
@@ -190,6 +191,9 @@ def find_kickline(game_id, play_id, track_fp, event):
     return m*(120-x1)+y1
 
 
+# In[7]:
+
+
 def expected_endzone_y_pos(pt_play, track_fp, event):
     ''' 
     The expected y-position of ball as it crosses fieldgoal line for each play (extra point or fieldgoal) based on a straight 
@@ -206,7 +210,6 @@ def expected_endzone_y_pos(pt_play, track_fp, event):
     pt_play - play dataframe for desired play type with computed endzone y-position column
 
     '''
-
     pt_play['expected_endzone_y'] = pt_play.index.map(
         lambda x: find_kickline(
             pt_play.loc[x]['gameId'],
@@ -218,10 +221,59 @@ def expected_endzone_y_pos(pt_play, track_fp, event):
     return pt_play
 
 
+# In[ ]:
+
+
+def exp_err_y(pt_play):
+    ''' 
+    The difference between the expected y-position of ball as it crosses fieldgoal line and the actual y-position
+    for each play (extra point or fieldgoal).
+
+    Paramters:
+    ----------
+    pt_play - expanded play dataframe for desired play type (includes cols: 'expected_endzone_y' and 'endzone_y')
+    
+    Returns:
+    --------
+    pt_play - play dataframe for desired play type with computed endzone y-position error column
+
+    '''
+    pt_play['endzone_y_error'] = np.abs(pt_play['endzone_y'] - pt_play['expected_endzone_y'])
+    
+    return pt_play
+
+
+# In[ ]:
+
+
+def off_center(pt_play):
+    ''' 
+    The difference between the y-position of ball as it crosses fieldgoal line and the center of the fieldgoal
+    for each play (extra point or fieldgoal).
+
+    Paramters:
+    ----------
+    pt_play - expanded play dataframe for desired play type (includes cols: 'expected_endzone_y' and 'endzone_y')
+    
+    Returns:
+    --------
+    pt_play - play dataframe for desired play type with computed endzone y-position off-from-center column
+
+    '''
+    pt_play['endzone_y_off_center'] = np.abs(pt_play['endzone_y'] - (160/6))
+    
+    return pt_play
+
+
+# In[8]:
+
+
 def l2_norm(x1, y1, x2, y2):
     # Computes euclidean distance between two points
     return np.sqrt(np.square(x1-x2) + np.square(y1-y2))
 
+
+# In[9]:
 
 
 def get_opposing_team(kicking_team):
@@ -229,8 +281,10 @@ def get_opposing_team(kicking_team):
     return 'home' if kicking_team == 'away' else 'away'
 
 
+# In[10]:
 
-def compute_kicker_core_dist(game_id, play_id, tracking, track_fp, event, k=5):
+
+def compute_kicker_core_dist(game_id, play_id, tracking, track_fp, k, event):
     '''
     Compute core distance from kicker to players on opposing team
 
@@ -285,12 +339,32 @@ def compute_kicker_core_dist(game_id, play_id, tracking, track_fp, event, k=5):
     core_distance = sorted_distances.iloc[k-1]
 
     return core_distance
-
-
-
-def kicker_core_dist(pt_play, tracking2018, tracking2019, tracking2020, track_fp, event, k=5):
     
-    tracking = pd.concat([tracking2018, tracking2019, tracking2020])
+
+
+# In[11]:
+
+
+def kicker_core_dist(pt_play, track_pt18, track_pt19, track_pt20, track_fp, event, k=5):
+    '''
+    Find core distance from kicker to players on opposing team. Wrapper function to call compute.
+
+    Parameters:
+    -----------
+    pt_play - play dataframe for desired play type
+    track_pt18, track_pt19, track_pt20 - tracking dataframes for play-type for each year
+    track_fp - football tracking dataframe for desired play type
+    event - string of the event that we want to find, i.e., 'extra_point_attempt'
+    k - Number of nearest neighbors to check (returns distance of k-th nearest player)
+    #we seem to need track_fp to get the event of the kick
+
+    Returns:
+    --------
+    pt_play - play dataframe for desired play type with new column 'kicker_core_dist'
+
+    '''
+    
+    tracking = pd.concat([track_pt18, track_pt19, track_pt20])
 
     pt_play['kicker_core_dist'] = pt_play.index.map(
         lambda x: compute_kicker_core_dist(
@@ -304,3 +378,10 @@ def kicker_core_dist(pt_play, tracking2018, tracking2019, tracking2020, track_fp
     )
 
     return pt_play
+
+
+# In[ ]:
+
+
+
+
