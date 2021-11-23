@@ -1,14 +1,14 @@
 #!/usr/bin/env python
 # coding: utf-8
 
-# In[1]:
+# In[ ]:
 
 
 import pandas as pd
 import numpy as np 
 
 
-# In[2]:
+# In[ ]:
 
 
 #small helper functions
@@ -17,7 +17,7 @@ def get_game_season(game_id, games):
     return games[games['gameId']==game_id]['season'].values[0]
 
 
-# In[3]:
+# In[ ]:
 
 
 def get_play(game_id, play_id, tracking):
@@ -40,7 +40,7 @@ def get_play(game_id, play_id, tracking):
     return play_ex
 
 
-# In[4]:
+# In[ ]:
 
 
 def get_event(game_id, play_id, track_fp, event):
@@ -66,7 +66,7 @@ def get_event(game_id, play_id, track_fp, event):
     event_df = play_ex.loc[index-5:index+5,:]
     event_index = event_df['s'].idxmax()
     
-    if (event_index == event_df.index[-1]) or (event_index == event_df.index[-2]):
+    if event_index == event_df.index[-1]:
         event_df = play_ex.loc[index-10:index+10,:]
         
     #frame_id = play_ex.loc[event_index]['frameId']
@@ -74,7 +74,7 @@ def get_event(game_id, play_id, track_fp, event):
     return event_df, event_index
 
 
-# In[5]:
+# In[ ]:
 
 
 def x_within_fg_bounds(x):
@@ -157,7 +157,7 @@ def endzone_y_pos(play_df, track_fp):
     return play_df
 
 
-# In[6]:
+# In[ ]:
 
 
 def find_kickline(game_id, play_id, track_fp, event):
@@ -181,6 +181,9 @@ def find_kickline(game_id, play_id, track_fp, event):
     event_df, event_index = get_event(game_id, play_id, track_fp, event)
     #event_index = event_df.index[event_df['frameId']==frame_id].values[0]
     
+    #adjust for sensitivity of the tracking data by pulling further point (adjusting for minor variation in y vals)
+    #example play : 2018100704,2912 has a parabolic curve
+    
     x1 = event_df['x'][event_index]
     y1 = event_df['y'][event_index]
     x2 = event_df['x'][event_index+2]
@@ -191,7 +194,7 @@ def find_kickline(game_id, play_id, track_fp, event):
     return m*(120-x1)+y1
 
 
-# In[7]:
+# In[ ]:
 
 
 def expected_endzone_y_pos(pt_play, track_fp, event):
@@ -265,7 +268,7 @@ def off_center(pt_play):
     return pt_play
 
 
-# In[8]:
+# In[ ]:
 
 
 def l2_norm(x1, y1, x2, y2):
@@ -273,7 +276,7 @@ def l2_norm(x1, y1, x2, y2):
     return np.sqrt(np.square(x1-x2) + np.square(y1-y2))
 
 
-# In[9]:
+# In[ ]:
 
 
 def get_opposing_team(kicking_team):
@@ -281,10 +284,10 @@ def get_opposing_team(kicking_team):
     return 'home' if kicking_team == 'away' else 'away'
 
 
-# In[10]:
+# In[ ]:
 
 
-def compute_kicker_core_dist(game_id, play_id, tracking, track_fp, event, k):
+def compute_kicker_core_dist(game_id, play_id, tracking, track_fp, event, k=5):
     '''
     Compute core distance from kicker to players on opposing team
 
@@ -342,10 +345,10 @@ def compute_kicker_core_dist(game_id, play_id, tracking, track_fp, event, k):
     
 
 
-# In[11]:
+# In[ ]:
 
 
-def kicker_core_dist(pt_play, track_pt18, track_pt19, track_pt20, track_fp, event, k):
+def kicker_core_dist(pt_play, track_pt18, track_pt19, track_pt20, track_fp, event, k=5):
     '''
     Find core distance from kicker to players on opposing team. Wrapper function to call compute.
 
@@ -378,10 +381,4 @@ def kicker_core_dist(pt_play, track_pt18, track_pt19, track_pt20, track_fp, even
     )
 
     return pt_play
-
-
-# In[ ]:
-
-
-
 
