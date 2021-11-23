@@ -284,7 +284,7 @@ def get_opposing_team(kicking_team):
 # In[10]:
 
 
-def compute_kicker_core_dist(game_id, play_id, tracking, track_fp, k, event):
+def compute_kicker_core_dist(game_id, play_id, tracking, track_fp, event, k):
     '''
     Compute core distance from kicker to players on opposing team
 
@@ -366,7 +366,7 @@ def kicker_core_dist(pt_play, track_pt18, track_pt19, track_pt20, track_fp, even
     
     tracking = pd.concat([track_pt18, track_pt19, track_pt20])
 
-    pt_play['kicker_core_dist'] = pt_play.index.map(
+    pt_play[f'kicker_core_dist_{k}'] = pt_play.index.map(
         lambda x: compute_kicker_core_dist(
             pt_play.loc[x]['gameId'],
             pt_play.loc[x]['playId'],
