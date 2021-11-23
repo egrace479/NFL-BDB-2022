@@ -66,7 +66,7 @@ def get_event(game_id, play_id, track_fp, event):
     event_df = play_ex.loc[index-5:index+5,:]
     event_index = event_df['s'].idxmax()
     
-    if event_index == event_df.index[-1]:
+    if (event_index == event_df.index[-1]) or (event_index == event_df.index[-2]):
         event_df = play_ex.loc[index-10:index+10,:]
         
     #frame_id = play_ex.loc[event_index]['frameId']
