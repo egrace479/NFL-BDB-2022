@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # coding: utf-8
 
-# In[1]:
+# In[ ]:
 
 
 import pandas as pd
@@ -10,7 +10,7 @@ from sklearn.preprocessing import StandardScaler, LabelEncoder
 import hdbscan
 
 
-# In[2]:
+# In[ ]:
 
 
 ##Helper Functions :)
@@ -318,15 +318,17 @@ def preprocess_ep(ep_plays):
     #reduce number of columns to those with numeric values or one-hot-encode the categoricals
     useful_cols = ['specialTeamsResult', 'yardlineNumber', 'gameClockSeconds', 
                    'penaltyCodes', 'penaltyYards', 'preSnapHomeScore', 
-                   'preSnapVisitorScore', 'kicker_height', 'kicker_weight', 'expected_endzone_y', 
-                   'endzone_y', 'kicker_core_dist']
+                   'preSnapVisitorScore', 'kicker_height', 'kicker_weight', #'expected_endzone_y', 
+                   'endzone_y', 'kicker_core_dist', 'endzone_y_error','endzone_y_off_center']
     
     #useful_cols with blockers
     #useful_cols = ['specialTeamsResult', 'yardlineNumber', 'gameClockSeconds', 
                  #   'penaltyCodes', 'penaltyYards', 'preSnapHomeScore', 'preSnapVisitorScore', 
                 # 'kicker_height', 'kicker_weight', 'blocker_height', 'blocker_weight',
                 # 'expected_endzone_y', 'endzone_y', 'kicker_core_dist']
-    ep_df = ep_plays[useful_cols]
+                
+    #need to drop nulls for clustering
+    ep_df = ep_plays[useful_cols].dropna()
     #one-hot-encode SpecialTeamsResult and penaltyCodes
     le_str = LabelEncoder()
     le_pc = LabelEncoder()
@@ -340,6 +342,9 @@ def preprocess_ep(ep_plays):
     scale = StandardScaler()
     ep_scale = scale.fit_transform(new_eps)
     #TO-DO QUESTION: do we want to scale categoricals too? No
+    
+    #make this back into a data frame
+    ep_scale = pd.DataFrame(ep_scale, columns = new_eps.columns)
     
     #add categorical columns back
     ep_scale['specialTeamsResult'] = ohe_str
@@ -373,8 +378,9 @@ def preprocess_fg(fg_plays):
                'preSnapVisitorScore', 'kicker_height', 
                'kicker_weight', 'down',
               'yardsToGo', 'kickLength',
-              'playResult', 'expected_endzone_y', 
-                   'endzone_y', 'kicker_core_dist']
+              'playResult', #'expected_endzone_y', 
+                   'endzone_y', 'kicker_core_dist',
+                  'endzone_y_error','endzone_y_off_center']
     
     #useful_cols with blockers
     #useful_cols = ['specialTeamsResult', 'yardlineNumber', 
@@ -386,7 +392,9 @@ def preprocess_fg(fg_plays):
     #          'yardsToGo', 'kickLength',
     #          'playResult', 'expected_endzone_y', 
     #             'endzone_y', 'kicker_core_dist']
-    fg_df = fg_plays[useful_cols]
+    
+    #need to drop nulls for clustering
+    fg_df = fg_plays[useful_cols].dropna()
     #one-hot-encode SpecialTeamsResult and penaltyCodes
     le_str = LabelEncoder()
     le_pc = LabelEncoder()
@@ -400,6 +408,9 @@ def preprocess_fg(fg_plays):
     scale = StandardScaler()
     fg_scale = scale.fit_transform(new_fgs)
     #TO-DO QUESTION: do we want to scale categoricals too? No
+    
+    #make this back into a data frame
+    fg_scale = pd.DataFrame(fg_scale, columns = new_fgs.columns)
     
     #add categorical columns back
     fg_scale['specialTeamsResult'] = ohe_str
