@@ -354,7 +354,7 @@ def preprocess_ep(ep_plays):
     ep_scale['specialTeamsResult'] = ohe_str
     ep_scale['penaltyCodes'] = ohe_pc
     #we are running a distance dependent algorithm
-    return ep_scale
+    return ep_scale, ep_df
     
 
 
