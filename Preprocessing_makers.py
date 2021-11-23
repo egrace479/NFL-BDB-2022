@@ -319,7 +319,11 @@ def preprocess_ep(ep_plays):
     useful_cols = ['specialTeamsResult', 'yardlineNumber', 'gameClockSeconds', 
                    'penaltyCodes', 'penaltyYards', 'preSnapHomeScore', 
                    'preSnapVisitorScore', 'kicker_height', 'kicker_weight', #'expected_endzone_y', 
-                   'endzone_y', 'kicker_core_dist', 'endzone_y_error','endzone_y_off_center']
+                   'endzone_y', 'endzone_y_error','endzone_y_off_center']
+    
+    columns = ep_plays.columns
+    
+    useful_cols.extend(col for col in columns if 'kicker_core_dist' in col)
     
     #useful_cols with blockers
     #useful_cols = ['specialTeamsResult', 'yardlineNumber', 'gameClockSeconds', 
@@ -379,8 +383,11 @@ def preprocess_fg(fg_plays):
                'kicker_weight', 'down',
               'yardsToGo', 'kickLength',
               'playResult', #'expected_endzone_y', 
-                   'endzone_y', 'kicker_core_dist',
-                  'endzone_y_error','endzone_y_off_center']
+                   'endzone_y', 'endzone_y_error','endzone_y_off_center']
+    
+    columns = fg_plays.columns
+    
+    useful_cols.extend(col for col in columns if 'kicker_core_dist' in col)
     
     #useful_cols with blockers
     #useful_cols = ['specialTeamsResult', 'yardlineNumber', 
