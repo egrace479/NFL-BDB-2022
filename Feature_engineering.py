@@ -66,7 +66,7 @@ def get_event(game_id, play_id, track_fp, event):
     event_df = play_ex.loc[index-5:index+5,:]
     event_index = event_df['s'].idxmax()
     
-    if event_index == event_df.index[-1]:
+    if (event_index == event_df.index[-1]) or (event_index == event_df.index[-2]):
         event_df = play_ex.loc[index-10:index+10,:]
         
     #frame_id = play_ex.loc[event_index]['frameId']
@@ -183,8 +183,8 @@ def find_kickline(game_id, play_id, track_fp, event):
     
     x1 = event_df['x'][event_index]
     y1 = event_df['y'][event_index]
-    x2 = event_df['x'][event_index+1]
-    y2 = event_df['y'][event_index+1]
+    x2 = event_df['x'][event_index+2]
+    y2 = event_df['y'][event_index+2]
     
     m = (y2-y1)/(x2-x1)
     
