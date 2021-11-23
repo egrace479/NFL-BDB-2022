@@ -62,7 +62,7 @@ def get_event(game_id, play_id, track_fp, event):
     '''
     play_ex = get_play(game_id, play_id, track_fp)
     
-    index = play_ex.index[play['event']== event].values[0]
+    index = play_ex.index[play_ex['event']== event].values[0]
     event_df = play_ex.loc[index-5:index+5,:]
     event_index = event_df['s'].idxmax()
     
@@ -345,7 +345,7 @@ def compute_kicker_core_dist(game_id, play_id, tracking, track_fp, k, event):
 # In[11]:
 
 
-def kicker_core_dist(pt_play, track_pt18, track_pt19, track_pt20, track_fp, event, k=5):
+def kicker_core_dist(pt_play, track_pt18, track_pt19, track_pt20, track_fp, event, k):
     '''
     Find core distance from kicker to players on opposing team. Wrapper function to call compute.
 
