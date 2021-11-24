@@ -301,18 +301,20 @@ def make_fieldGoal(play_df, players_df):
 # In[ ]:
 
 
-def preprocess_ep(ep_plays):
+def preprocess_ep(ep_plays, encode_categorical = True):
     '''
     This function the ExtraPoint dataframe for clustering.
 
     Parameters:
     -----------
     ep_plays - ExtraPoint dataframe
+    encode_categorical - Boolean, default is True
     ...
 
     Returns:
     -----------
-    ep_scale - processed ExtraPoint dataframe
+    ep_scale - scaled/processed ExtraPoint dataframe
+    ep_df - truncated ExtraPoint Dataframe without the scaling.
 
     '''
     #reduce number of columns to those with numeric values or one-hot-encode the categoricals
@@ -333,11 +335,7 @@ def preprocess_ep(ep_plays):
                 
     #need to drop nulls for clustering
     ep_df = ep_plays[useful_cols].dropna()
-    #one-hot-encode SpecialTeamsResult and penaltyCodes
-    le_str = LabelEncoder()
-    le_pc = LabelEncoder()
-    ohe_str = le_str.fit_transform(ep_df['specialTeamsResult'])
-    ohe_pc = le_pc.fit_transform(ep_df['penaltyCodes'])
+    
     new_eps = ep_df.drop(['specialTeamsResult', 'penaltyCodes'], axis=1)
     #new_eps['specialTeamsResult'] = ohe_str
     #new_eps['penaltyCodes'] = ohe_pc
@@ -351,9 +349,19 @@ def preprocess_ep(ep_plays):
     ep_scale = pd.DataFrame(ep_scale, columns = new_eps.columns)
     
     #add categorical columns back
-    ep_scale['specialTeamsResult'] = ohe_str
-    ep_scale['penaltyCodes'] = ohe_pc
-    #we are running a distance dependent algorithm
+    if encode_categorical:
+        #one-hot-encode SpecialTeamsResult and penaltyCodes
+        le_str = LabelEncoder()
+        le_pc = LabelEncoder()
+        ohe_str = le_str.fit_transform(ep_df['specialTeamsResult'])
+        ohe_pc = le_pc.fit_transform(ep_df['penaltyCodes'])
+        
+        ep_scale['specialTeamsResult'] = ohe_str
+        ep_scale['penaltyCodes'] = ohe_pc
+    else:
+        ep_scale['specialTeamsResult'] = ep_df['specialTeamsResult']
+        ep_scale['penaltyCodes'] =ep_df['penaltyCodes']
+        
     return ep_scale, ep_df
     
 
@@ -361,18 +369,20 @@ def preprocess_ep(ep_plays):
 # In[ ]:
 
 
-def preprocess_fg(fg_plays):
+def preprocess_fg(fg_plays, encode_categorical=True):
     '''
     This function the FieldGoal dataframe for clustering.
 
     Parameters:
     -----------
     fg_plays - FieldGoal dataframe
+    encode_categorical - Boolean, default is True
     ...
 
     Returns:
     -----------
-    fg_scale - processed FieldGoal dataframe
+    fg_scale - scaled/processed FieldGoal dataframe
+    fg_df - truncated FieldGoal Dataframe without the scaling.
 
     '''
     #reduce number of columns to those with numeric values or one-hot-encode categoricals
@@ -402,11 +412,7 @@ def preprocess_fg(fg_plays):
     
     #need to drop nulls for clustering
     fg_df = fg_plays[useful_cols].dropna()
-    #one-hot-encode SpecialTeamsResult and penaltyCodes
-    le_str = LabelEncoder()
-    le_pc = LabelEncoder()
-    ohe_str = le_str.fit_transform(fg_df['specialTeamsResult'])
-    ohe_pc = le_pc.fit_transform(fg_df['penaltyCodes'])
+    
     new_fgs = fg_df.drop(['specialTeamsResult', 'penaltyCodes'], axis=1)
     #new_fgs['specialTeamsResult'] = ohe_str
     #new_fgs['penaltyCodes'] = ohe_pc
@@ -414,15 +420,24 @@ def preprocess_fg(fg_plays):
     #scale data, but only non-categorical columns
     scale = StandardScaler()
     fg_scale = scale.fit_transform(new_fgs)
-    #TO-DO QUESTION: do we want to scale categoricals too? No
     
     #make this back into a data frame
     fg_scale = pd.DataFrame(fg_scale, columns = new_fgs.columns)
     
     #add categorical columns back
-    fg_scale['specialTeamsResult'] = ohe_str
-    fg_scale['penaltyCodes'] = ohe_pc
-    #we are running a distance dependent algorithm
+    if encode_categorical:
+        #one-hot-encode SpecialTeamsResult and penaltyCodes
+        le_str = LabelEncoder()
+        le_pc = LabelEncoder()
+        ohe_str = le_str.fit_transform(fg_df['specialTeamsResult'])
+        ohe_pc = le_pc.fit_transform(fg_df['penaltyCodes'])
+        
+        fg_scale['specialTeamsResult'] = ohe_str
+        fg_scale['penaltyCodes'] = ohe_pc
+    else:
+        fg_scale['specialTeamsResult'] = fg_df['specialTeamsResult']
+        fg_scale['penaltyCodes'] = fg_df['penaltyCodes']
+    
     return fg_scale, fg_df
 
 
