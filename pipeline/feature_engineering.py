@@ -118,7 +118,7 @@ def find_kickline(game_id, play_id, track_fp, event):
     
     return m*(120-x1)+y1
 
-def expected_endzone_y_pos(pt_play, track_fp, event):
+def endzone_y_expected(pt_play, track_fp, event):
     ''' 
     The expected y-position of ball as it crosses fieldgoal line for each play (extra point or fieldgoal) based on a straight 
     line estimate.
@@ -134,7 +134,7 @@ def expected_endzone_y_pos(pt_play, track_fp, event):
     pt_play - play dataframe for desired play type with computed endzone y-position column
 
     '''
-    pt_play['expected_endzone_y'] = pt_play.index.map(
+    pt_play['endzone_y_expected'] = pt_play.index.map(
         lambda x: find_kickline(
             pt_play.loc[x]['gameId'],
             pt_play.loc[x]['playId'],
@@ -144,7 +144,7 @@ def expected_endzone_y_pos(pt_play, track_fp, event):
 
     return pt_play
 
-def exp_err_y(pt_play):
+def endzone_y_error(pt_play):
     ''' 
     The difference between the expected y-position of ball as it crosses fieldgoal line and the actual y-position
     for each play (extra point or fieldgoal).
@@ -158,11 +158,11 @@ def exp_err_y(pt_play):
     pt_play - play dataframe for desired play type with computed endzone y-position error column
 
     '''
-    pt_play['endzone_y_error'] = np.abs(pt_play['endzone_y'] - pt_play['expected_endzone_y'])
+    pt_play['endzone_y_error'] = np.abs(pt_play['endzone_y'] - pt_play['endzone_y_expected'])
     
     return pt_play
 
-def off_center(pt_play):
+def endzone_y_off_center(pt_play):
     ''' 
     The difference between the y-position of ball as it crosses fieldgoal line and the center of the fieldgoal
     for each play (extra point or fieldgoal).
@@ -215,25 +215,25 @@ def compute_kicker_core_dist(game_id, play_id, tracking, track_fp, event, k=5):
     kick_frame = event_df.loc[event_index]['frameId']
     kick_tracking = play_ex[play_ex['frameId']==kick_frame]
 
-    # Get data from players on opposing team
-    try:
-        kicking_team = kick_tracking[kick_tracking['position']=='K']['team'].values[0]
+    # Get name of kicker position
+    if len(kick_tracking[kick_tracking['position']=='K']) > 0:
+        kicker_position = 'K'
         
-    except IndexError:
-
-        '''
-        Apparently there are cases in which a kicker isn't present (???)
-        so if grabbing the kicker's team fails, just return null.
-        '''
-
+    elif len(kick_tracking[kick_tracking['position']=='P']) > 0:
+        kicker_position = 'P'
+    
+    else:
         return np.nan
+
+    # Get names of kicking and opposing team
+    kicking_team = kick_tracking[kick_tracking['position']==kicker_position]['team'].values[0]
 
     opposing_team = get_opposing_team(kicking_team)
     opposing_team_players = kick_tracking[kick_tracking['team']==opposing_team]
 
     # Get kicker x and y coords
-    kicker_x = kick_tracking[kick_tracking['position']=='K']['x'].values[0]
-    kicker_y = kick_tracking[kick_tracking['position']=='K']['y'].values[0]
+    kicker_x = kick_tracking[kick_tracking['position']==kicker_position]['x'].values[0]
+    kicker_y = kick_tracking[kick_tracking['position']==kicker_position]['y'].values[0]
 
     # Compute Euclidean distances from kicker to players on opposing team
     opposing_team_players['kicker_dist'] = l2_norm(kicker_x, kicker_y, opposing_team_players['x'], opposing_team_players['y'])

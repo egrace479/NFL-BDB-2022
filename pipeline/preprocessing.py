@@ -129,33 +129,6 @@ def preprocess_play(play_df):
     #(note their height & weight comes in too)
     return play_df
 
-def make_extraPoint(play_df, players_df):
-    '''
-    This function creates the ExtraPoint dataframe.
-
-    Parameters:
-    -----------
-    play_df - Preprocessed players.csv dataframe
-    ...
-
-    Returns:
-    -----------
-    ep_plays - ExtraPoint dataframe
-
-    '''
-    play_extrapoint = play_df.loc[play_df['specialTeamsPlayType']=='Extra Point']
-    #remove extraneous columns
-    ep = play_extrapoint.drop(columns =['kickReturnYardage', 'kickLength', 'playResult', 'returnerId', 'yardsToGo', 'down', 'specialTeamsPlayType'])
-   
-    #add in Kickers
-    ep_play = pd.merge(ep, players_df[['nflId', 'height', 'weight','Position', 'displayName']], how = 'left',
-             left_on = 'kickerId', right_on = 'nflId')
-    ep_plays=ep_play.rename(columns = {"height": 'kicker_height', "weight": 'kicker_weight', "Position": 'kicker_position', "displayName": 'kicker_name'})
-    ep_plays=ep_plays.drop(columns=['nflId'])
-
-    return ep_plays
-
-
 # #### Preprocessing functions for actual modeling or clustering.
 
 def preprocess_ep(ep_plays, encode_categorical = True):
@@ -177,7 +150,7 @@ def preprocess_ep(ep_plays, encode_categorical = True):
     #reduce number of columns to those with numeric values or one-hot-encode the categoricals
     useful_cols = ['specialTeamsResult', 'yardlineNumber', 'gameClockSeconds', 
                    'penaltyCodes', 'penaltyYards', 'preSnapHomeScore', 
-                   'preSnapVisitorScore', 'kicker_height', 'kicker_weight', #'expected_endzone_y', 
+                   'preSnapVisitorScore', 'kicker_height', 'kicker_weight', #'endzone_y_expected', 
                    'endzone_y', 'endzone_y_error','endzone_y_off_center']
     
     columns = ep_plays.columns
@@ -238,7 +211,7 @@ def preprocess_fg(fg_plays, encode_categorical=True):
                'preSnapVisitorScore', 'kicker_height', 
                'kicker_weight', 'down',
               'yardsToGo', 'kickLength',
-              'playResult', #'expected_endzone_y', 
+              'playResult', #'endzone_y_expected', 
                    'endzone_y', 'endzone_y_error','endzone_y_off_center']
     
     columns = fg_plays.columns
