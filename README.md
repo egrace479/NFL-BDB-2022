@@ -120,10 +120,11 @@ In order to perform our analysis on the specific types of plays, we must assembl
     - Quantifies the pressure applied by the defense on the kicker.
     - How far the kicker has to look to see the closest k number of players at the time of the kick. For instance, in the image below, kicker core-distance k=3 would be the distance from the football to the player in the middle.
     - Note: There may be multiple kicker_core_dist columns depending on how many core-distances are calculated.
-<img width="330" alt="KickerCoreDist" src="https://user-images.githubusercontent.com/38985481/144290758-7614f600-deb5-40c2-bfd8-f4cafccee145.png">
+<img width="482" alt="KickerCoreDistSmall" src="https://user-images.githubusercontent.com/38985481/144310042-6c552a2c-bc5f-42f5-b4df-2974a8580217.png">
 
 
 ## Clustering:
+
 
 ### Step 1: UMAP
 
