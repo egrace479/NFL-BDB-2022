@@ -48,59 +48,61 @@ Note we have 7 files from the competetition hosts:
 
 ## Constructing Play Type DataFrames:
   
-In order to perform our analysis on the specific types of plays, we must assemble dataframes of the relevant information for each play type (field goals and extra points). 
+In order to perform our analysis on the specific types of plays, we must assemble dataframes of the relevant information for each play type (field goals and extra points). For clustering, we further reduce the size of the extra point and field goal dataframes to include only those features we wish to be considered in the clustering. Maintaining a separate dataframe with all relevant data to which we may append the cluster Id's as a column afterwards allows us to further explore the data points in the clusters.
   - Extra Point: 
     - Include only `specialTeamsPlayType` "Extra Point", so this column is also removed.
     - Merge with player data for kicker ('height', 'weight', 'position', 'displayName') on `nflId` and `kickerId`.
     - Key variables are `gameId`, `playId`, `kickerId` (the kicker's `nflId`).
-    - Final columns are: 
+    - Final columns for clustering are:
+      - `yardlineNumber`: Line-of-scrimmage yard line (numeric)
+      - `gameClockSeconds`: Overall game time measured in seconds (numeric)
+      - `penaltyCodes`: NFL penalty categorization (https://operations.nfl.com/the-rules/2021-nfl-rulebook/#table-of-foul-codes) of penalty on play. Standard penalty code with a "d" at the end indicates this is a penalty on the defense (categorical). 
+      - `penaltyYards`: Number of yards gained by the `possessionTeam` through the penalty (numeric)
+      - `preSnapHomeScore`: Home team's score prior to the play (numeric)
+      - `preSnapVisitorScore`: Visting team's score prior to the play (numeric)
+      - `kicker_height`: Height of kicker in inches (numeric)
+      - `kicker_weight`: Weight of kicker in pounds (numeric)  
+  <!-- Extra informational columns not included in clustering:
       - `playDescription`: Text description of the play
       - `quarter`: Quarter of the game in which the play occurs (numeric)
       - `possessionTeam`: Team kicking the ball
       - `specialTeamsResult`: "Kick Attempt Good", "Kick Attempt No Good", "Blocked Kick Attempt", "Non-Special Teams Result"
       - `kickBlockerId`: `nflId` of blocker
       - `yardlineSide`:
-      - `yardlineNumber`: Line-of-scrimmage yard line (numeric)
-      - `gameClockSeconds`: Overall game time measured in seconds (numeric)
-      - `penaltyCodes`: NFL penalty categorization (https://operations.nfl.com/the-rules/2021-nfl-rulebook/#table-of-foul-codes) of penalty on play. Standard penalty code with a "d" at the end indicates this is a penalty on the defense. 
       - `penaltyJerseyNumbers`: Jersey number and team code of player who committed the penalty (multiple players separated by ";")
-      - `penaltyYards`: Number of yards gained by the `possessionTeam` through the penalty (numeric)
-      - `preSnapHomeScore`: Home team's score prior to the play (numeric)
-      - `preSnapVisitorScore`: Visting team's score prior to the play (numeric)
       - `passResult`: Scrimmage outcome of "Non-Special Teams Result": ("C": Complete pass, "I": Incomplete Pass, "S": Quarterback sack, "IN": Intercepted pass, "R": Scramble, "' '": Designed Rush)
       - `absoluteYardlineNumber`: Location of ball downfield in tracking data coordinates (numeric)
-      - `kicker_height`: Height of kicker in inches (numeric)
-      - `kicker_weight`: Weight of kicker in pounds (numeric)
       - `kicker_position`: Position of kicker
-      - `kicker_name`: Name of kicker
+      - `kicker_name`: Name of kicker -->
   - Field Goal: 
     - Include only `specialTeamsPlayType` "Field Goal", so this column is also removed.
     - Merge with player data for kicker ('height', 'weight', 'position', 'displayName') on `nflId` and `kickerId`.
     - Key variables are `gameId`, `playId`, `kickerId` (the kicker's `nflId`).
-    - Final columns are: 
-      - `playDescription`: Text description of the play
-      - `quarter`: Quarter of the game in which the play occurs (numeric)
+    - Final columns for clustering are:
       - `down`: Down on which the play occurs (numeric)
       - `yardsToGo`: Distance required for first down (numeric)
+      - `yardlineNumber`: Line-of-scrimmage yard line (numeric)
+      - `gameClockSeconds`: Overall game time measured in seconds (numeric)
+      - `penaltyCodes`: NFL penalty categorization (https://operations.nfl.com/the-rules/2021-nfl-rulebook/#table-of-foul-codes) of penalty on play. Standard penalty code with a "d" at the end indicates this is a penalty on the defense (categorical).
+      - `penaltyYards`: Number of yards gained by the `possessionTeam` through the penalty (numeric)
+      - `preSnapHomeScore`: Home team's score prior to the play (numeric)
+      - `preSnapVisitorScore`: Visting team's score prior to the play (numeric)
+      - `kickLength`: Distance the ball travels in the air (numeric)
+      - `playResult`: Net yards gained by kicking team, penalty yardage inclduded (numeric)
+      - `kicker_height`: Height of kicker in inches (numeric)
+      - `kicker_weight`: Weight of kicker in pounds (numeric) 
+<!-- Extra informational columns not included in clustering:     
+      - `playDescription`: Text description of the play
+      - `quarter`: Quarter of the game in which the play occurs (numeric)
       - `possessionTeam`: Team kicking the ball
       - `specialTeamsResult`: "Kick Attempt Good", "Kick Attempt No Good", "Blocked Kick Attempt", "Non-Special Teams Result"
       - `kickBlockerId`: `nflId` of blocker
       - `yardlineSide`:
-      - `yardlineNumber`: Line-of-scrimmage yard line (numeric)
-      - `gameClockSeconds`: Overall game time measured in seconds (numeric)
-      - `penaltyCodes`: NFL penalty categorization (https://operations.nfl.com/the-rules/2021-nfl-rulebook/#table-of-foul-codes) of penalty on play. Standard penalty code with a "d" at the end indicates this is a penalty on the defense. 
       - `penaltyJerseyNumbers`: Jersey number and team code of player who committed the penalty (multiple players separated by ";")
-      - `penaltyYards`: Number of yards gained by the `possessionTeam` through the penalty (numeric)
-      - `preSnapHomeScore`: Home team's score prior to the play (numeric)
-      - `preSnapVisitorScore`: Visting team's score prior to the play (numeric)
       - `passResult`: Scrimmage outcome of "Non-Special Teams Result": ("C": Complete pass, "I": Incomplete Pass, "S": Quarterback sack, "IN": Intercepted pass, "R": Scramble, "' '": Designed Rush)
-      - `kickLength`: Distance the ball travels in the air (numeric)
-      - `playResult`: Net yards gained by kicking team, penalty yardage inclduded (numeric)
       - `absoluteYardlineNumber`: Location of ball downfield in tracking data coordinates (numeric)
-      - `kicker_height`: Height of kicker in inches (numeric)
-      - `kicker_weight`: Weight of kicker in pounds (numeric)
       - `kicker_position`: Position of kicker
-      - `kicker_name`: Name of kicker
+      - `kicker_name`: Name of kicker -->
 
 ## Feature Engineering:
 
@@ -110,21 +112,25 @@ In order to perform our analysis on the specific types of plays, we must assembl
   - Endzone y Error: Difference between the expected endzone y-postition and the actual enzone y-position.
   - Off-Center: The distance from the center of the field goal (along the y-axis) of the football as it crosses the endzone.
   - Kicker Core-Distance: How far the kicker has to look to see the closest k number of players at the time of the kick. For instance, in the image below, kicker core-distance k=3 would be the distance from the football to the player in the middle.
+    - Note: There may be multiple kicker_core_dist columns depending on how many core-distances are calculated.
 <img width="330" alt="KickerCoreDist" src="https://user-images.githubusercontent.com/38985481/144290758-7614f600-deb5-40c2-bfd8-f4cafccee145.png">
 
 
 ## Clustering:
 
-For clustering, we further reduce the size of the extra point and field goal dataframes to include only those features we wish to be considered in the clustering. Maintaining a separate dataframe with all relevant data to which we may append the cluster Id's as a column afterwards allows us to further explore the data points in the clusters.
+### Step 1: UMAP
+
+UMAP (Uniform Manifold Approximation and Projection) is a topologically derived dimensionality reduction algorithm.
+
+While it is nice that we can reduce the number of dimensions in our data, that is not the primary benefit we glean from it. For our purposes, UMAP is beneficial for two reasons:
+1. UMAP is able to cleanly separate regions of local connectedness in data while capturing global structure as well as possible.
+2. UMAP allows us to synthesize different notions of distance that apply separately to numeric and categorical data types, helping alleviate some of the pitfalls common to using distance-metric-based clustering algorithms on mixed-type data.
+
+### Step 2: HDBSCAN
+
+
+  <!--For clustering, we further reduce the size of the extra point and field goal dataframes to include only those features we wish to be considered in the clustering. Maintaining a separate dataframe with all relevant data to which we may append the cluster Id's as a column afterwards allows us to further explore the data points in the clusters.
   - Extra point columns for clustering are:
-    - `yardlineNumber`: Line-of-scrimmage yard line (numeric)
-    - `gameClockSeconds`: Overall game time measured in seconds (numeric)
-    - `penaltyCodes`: NFL penalty categorization (https://operations.nfl.com/the-rules/2021-nfl-rulebook/#table-of-foul-codes) of penalty on play. Standard penalty code with a "d" at the end indicates this is a penalty on the defense (categorical). 
-    - `penaltyYards`: Number of yards gained by the `possessionTeam` through the penalty (numeric)
-    - `preSnapHomeScore`: Home team's score prior to the play (numeric)
-    - `preSnapVisitorScore`: Visting team's score prior to the play (numeric)
-    - `kicker_height`: Height of kicker in inches (numeric)
-    - `kicker_weight`: Weight of kicker in pounds (numeric) 
     - `endzone_y`: The y-position of the football as it crosses the endzone (numeric)
     - `endzone_y_error`: The difference between the actual and expected y-position of the football as it crosses the endzone (numeric)
     - `endzone_y_off_center`: How far the football is from the center of the field goal post as it crosses the endzone (numeric)
@@ -148,6 +154,7 @@ For clustering, we further reduce the size of the extra point and field goal dat
     - `endzone_y_off_center`: How far the football is from the center of the field goal post as it crosses the endzone (numeric)
     - `kicker_core_dist_{k}`: Core-distance "k" at time of kick.
       - Note: There may be multiple kicker_core_dist columns depending on how many core-distances are calculated.
+-->
 
 # Phase 2: Understanding Punts and Kickoffs
 
