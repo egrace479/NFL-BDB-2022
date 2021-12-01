@@ -8,7 +8,7 @@ Our project is divided into two phases:
 
 Phase 1 of this project is for Elizabeth G. Campolongo, Ranthony A.C. Edmonds, and Chaya Norton's Erdős Data Science Project in Fall 2021, in collaboration with Kenneth Howe (from Mined XAI).
 
-Phase 2 of this project will be completed as a submission to the NFL Big Data Bowl 2022, listed on Kaggle.com: https://www.kaggle.com/c/nfl-big-data-bowl-2022/overview.
+Phase 2 of this project will be completed as a submission to the NFL Big Data Bowl 2022, listed on Kaggle.com: https://www.kaggle.com/c/nfl-big-data-bowl-2022/overview. This will also be completed by our team: Elizabeth G. Campolongo, Ranthony A.C. Edmonds, Kenneth Howe, and Chaya Norton
 
 Additionally, this project was suggested by MinedXAI, with the goal to leverage Topological Data Analysis (TDA) as a tool to better understand NFL Special Teams Plays. 
 
