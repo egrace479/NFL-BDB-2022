@@ -1,4 +1,4 @@
-# Understanding Special Teams Plays through Topological Data Analysis (TDA)
+# Understanding NFL Special Teams Plays through Topological Data Analysis (TDA)
 
 Special Teams Play has the ability to significantly impact the outcome of a game in the National Football League (NFL), yet quantitative analysis of special teams has been relatively limited. The current trend of using advanced metrics and data analytics in American football can help stakeholders, such as NFL analysts and coaches, better understand what features significantly influence special teams play. This is the goal of the 2022 NFL Big Data Bowl Challenge. Our team worked with a research scientist from MinedXAI, an exploratory artificial intelligence company, to quantify special teams play for this competition.
 
