@@ -106,12 +106,19 @@ In order to perform our analysis on the specific types of plays, we must assembl
 
 ## Feature Engineering:
 
-  - Endzone y-position: y-coordinate of the ball as it crosses the endzone.
-  - Expected Endzone y-position: Expected y-coordinate of the ball as it crosses the endzone. This is calculated as a straight line from the position when kicked and the position two frames later (.2 seconds later).
-    - Used to calculate the endzone y-error.
-  - Endzone y Error: Difference between the expected endzone y-postition and the actual enzone y-position.
-  - Off-Center: The distance from the center of the field goal (along the y-axis) of the football as it crosses the endzone.
-  - Kicker Core-Distance: How far the kicker has to look to see the closest k number of players at the time of the kick. For instance, in the image below, kicker core-distance k=3 would be the distance from the football to the player in the middle.
+  - Endzone y-position: 
+    - y-coordinate of the ball as it crosses the endzone.
+  - Expected Endzone y-position: 
+    - Expected y-coordinate of the ball as it crosses the endzone. 
+    - Calculated as a straight line from the position when kicked and the position two frames later (.2 seconds later).
+    - Used to calculate the endzone y-error, represented in clustering by endzone y-error.
+  - Endzone y Error: 
+    - Difference between the expected endzone y-position and the actual enzone y-position.
+  - Off-Center: 
+    - The distance from the center of the field goal (along the y-axis) of the football as it crosses the endzone.
+  - Kicker Core-Distance: 
+    - Quantifies the pressure applied by the defense on the kicker.
+    - How far the kicker has to look to see the closest k number of players at the time of the kick. For instance, in the image below, kicker core-distance k=3 would be the distance from the football to the player in the middle.
     - Note: There may be multiple kicker_core_dist columns depending on how many core-distances are calculated.
 <img width="330" alt="KickerCoreDist" src="https://user-images.githubusercontent.com/38985481/144290758-7614f600-deb5-40c2-bfd8-f4cafccee145.png">
 
@@ -127,6 +134,10 @@ While it is nice that we can reduce the number of dimensions in our data, that i
 2. UMAP allows us to synthesize different notions of distance that apply separately to numeric and categorical data types, helping alleviate some of the pitfalls common to using distance-metric-based clustering algorithms on mixed-type data.
 
 ### Step 2: HDBSCAN
+
+HDBSCAN (Hierarchical Density-Based Spatial Clustering of Applications with Noise) is a clustering algorithm with foundations in computational topology. 
+  - It selects clusters using a hierarchical dendogram structure constructed from an approximate density function on the dataset, in which each branch of the dendogram corresponds to some connected component of a level set of the approximated density function. 
+  - The most persistent branches in this dendogram are assumed to be the most intrinsically meaningful, and are selected as the final clusters output by the algorithm.
 
 
   <!--For clustering, we further reduce the size of the extra point and field goal dataframes to include only those features we wish to be considered in the clustering. Maintaining a separate dataframe with all relevant data to which we may append the cluster Id's as a column afterwards allows us to further explore the data points in the clusters.
