@@ -39,6 +39,11 @@ Note we have 7 files from the competetition hosts:
     - Each contains location and directional data for every player on the field as well as the location and movement of the football for all special teams plays per game from the indicated season.
     - Key variables are `gameID`, `nflId`, and `playId`.
 
+### Example play animated using the tracking data.
+
+https://user-images.githubusercontent.com/38985481/144435378-6106e127-4956-45c2-87f7-f7fffebc44fb.mp4
+
+
 ## Preprocessing:
 
   - Tracking: We subdivide each of the tracking datasets into play type specific files to reduce the memory consumption of the large data files. We then isolate the tracking information relating only to the football, dropping columns with information not available for the football itself (eg., direction and angle), and recombining into a single dataframe by play-type encompassing all three years of data.
@@ -116,6 +121,12 @@ In order to perform our analysis on the specific types of plays, we must assembl
     - Difference between the expected endzone y-position and the actual enzone y-position.
   - Off-Center: 
     - The distance from the center of the field goal (along the y-axis) of the football as it crosses the endzone.
+    
+#### Example of a failed Field Goal: (note the curve and how far off-center the ball ends)
+
+https://user-images.githubusercontent.com/38985481/144438547-5186d0fe-1b20-461e-bea8-0cdf89c339e9.mp4
+
+    
   - Kicker Core-Distance: 
     - Quantifies the pressure applied by the defense on the kicker.
     - How far the kicker has to look to see the closest k number of players at the time of the kick. For instance, in the image below, kicker core-distance k=3 would be the distance from the football to the player in the middle.
