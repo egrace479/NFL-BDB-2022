@@ -47,7 +47,7 @@ def make_field_goal(play_df, players_df, fg_tracking_ball):
     fg_plays - FieldGoal dataframe
 
     '''
-    play_fieldgoal = play_df.loc[play_df['specialTeamsPlayType']=='Field Goal']
+    play_fieldgoal = play_df.loc[play_df['specialTeamsPlayType']=='Field Goal'].copy(deep=True)
     # Remove extraneous columns
     fg = play_fieldgoal.drop(columns =['kickReturnYardage', 'specialTeamsPlayType'])
    
@@ -59,9 +59,9 @@ def make_field_goal(play_df, players_df, fg_tracking_ball):
 
     # Limit to results with relevant event data
     fg_plays = fg_plays[fg_plays['specialTeamsResult'].isin(['Kick Attempt Good', 'Kick Attempt No Good'])]
-    attempts_ids = fg_plays[['gameId', 'playId']]
+    attempts_ids = fg_plays[['gameId', 'playId']].copy(deep=True)
     attempts_tracking = pd.merge(attempts_ids, fg_tracking_ball, left_on = ['gameId', 'playId'], right_on = ['gameId', 'playId'])
-    attempts_event = attempts_tracking[attempts_tracking['event']=='field_goal_attempt']
+    attempts_event = attempts_tracking[attempts_tracking['event']=='field_goal_attempt'].copy(deep=True)
     attempts_event['mergeId'] = attempts_event['gameId'].astype(str) + attempts_event['playId'].astype(str)
     attempts_ids['mergeId'] = attempts_ids['gameId'].astype(str) + attempts_ids['playId'].astype(str)
     indices_to_drop = attempts_ids[~attempts_ids['mergeId'].isin(attempts_event['mergeId'])].index
@@ -83,7 +83,7 @@ def make_extra_point(play_df, players_df, ep_tracking_ball):
     ep_plays - ExtraPoint dataframe
 
     '''
-    play_extrapoint = play_df.loc[play_df['specialTeamsPlayType']=='Extra Point']
+    play_extrapoint = play_df.loc[play_df['specialTeamsPlayType']=='Extra Point'].copy(deep=True)
     #remove extraneous columns
     ep = play_extrapoint.drop(columns =['kickReturnYardage', 'kickLength', 'playResult', 'returnerId', 'yardsToGo', 'down', 'specialTeamsPlayType'])
    
@@ -95,9 +95,9 @@ def make_extra_point(play_df, players_df, ep_tracking_ball):
 
     # Limit to results with relevant event data
     ep_plays = ep_plays[ep_plays['specialTeamsResult'].isin(['Kick Attempt Good', 'Kick Attempt No Good'])]
-    attempts_ids = ep_plays[['gameId', 'playId']]
+    attempts_ids = ep_plays[['gameId', 'playId']].copy(deep=True)
     attempts_tracking = pd.merge(attempts_ids, ep_tracking_ball, left_on = ['gameId', 'playId'], right_on = ['gameId', 'playId'])
-    attempts_event = attempts_tracking[attempts_tracking['event']=='extra_point_attempt']
+    attempts_event = attempts_tracking[attempts_tracking['event']=='extra_point_attempt'].copy(deep=True)
     attempts_event['mergeId'] = attempts_event['gameId'].astype(str) + attempts_event['playId'].astype(str)
     attempts_ids['mergeId'] = attempts_ids['gameId'].astype(str) + attempts_ids['playId'].astype(str)
     indices_to_drop = attempts_ids[~attempts_ids['mergeId'].isin(attempts_event['mergeId'])].index

@@ -229,7 +229,7 @@ def compute_kicker_core_dist(game_id, play_id, tracking, track_fp, event, k=5):
     kicking_team = kick_tracking[kick_tracking['position']==kicker_position]['team'].values[0]
 
     opposing_team = get_opposing_team(kicking_team)
-    opposing_team_players = kick_tracking[kick_tracking['team']==opposing_team]
+    opposing_team_players = kick_tracking[kick_tracking['team']==opposing_team].copy(deep=True)
 
     # Get kicker x and y coords
     kicker_x = kick_tracking[kick_tracking['position']==kicker_position]['x'].values[0]
