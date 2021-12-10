@@ -22,7 +22,7 @@ def clock(x,df):
     minutes = gameClock_split[0]
     seconds = gameClock_split[1]
 
-    total_minutes = int(minutes) + 15 * (quarter - 1)
+    total_minutes = 15-int(minutes) + 15 * (quarter - 1)
 
     return (total_minutes * 60) + int(seconds)
 
